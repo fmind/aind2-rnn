@@ -1,31 +1,19 @@
-# import keras
-import numpy as np
+import math
+import re
 
-# from keras.layers import LSTM, Dense
-# from keras.models import Sequential
+import numpy as np
+from keras.layers import LSTM, Dense
+from keras.models import Sequential
 
 
 # TODO: fill out the function below that transforms the input series
 # and window-size into a set of input/output pairs for use with our RNN model
 def window_transform_series(series, window_size):
-    """Containers for input/output pairs based on window size.
-    >>> X, y = window_transform_series(np.array([1, 3, 5, 7, 9, 11, 13]), 2)
-    >>> X
-    array([[ 1,  3],
-           [ 3,  5],
-           [ 5,  7],
-           [ 7,  9],
-           [ 9, 11]])
-    >>> y
-    array([[ 5],
-           [ 7],
-           [ 9],
-           [11],
-           [13]])
-    """
-    n = len(series)
-    y = [[x] for x in series[window_size:]]
-    X = [series[i:i + window_size] for i in range(0, n - window_size)]
+    w = window_size
+
+    # containers for input/output pairs
+    y = [[x] for x in series[w:]]
+    X = [series[i:i + w] for i in range(0, len(series) - w)]
 
     # reshape each
     X = np.asarray(X)
@@ -38,21 +26,28 @@ def window_transform_series(series, window_size):
 
 # TODO: build an RNN to perform regression on our time series input/output data
 def build_part1_RNN(window_size):
-    pass
+    model = Sequential()
+
+    # an LSTM module with 5 hidden units
+    model.add(LSTM(5, input_shape=(window_size, 1)))
+    # a Dense module with one unit
+    model.add(Dense(1))
+
+    return model
 
 
 # TODO: return the text input with only ascii lowercase and the punctuation given below included.
 def cleaned_text(text):
-    # punctuation = ['!', ',', '.', ':', ';', '?']
-
-    return text
+    return re.sub(r"[^a-z!,.:;?]", " ", text)
 
 
 # TODO: fill out the function below that transforms the input text and window-size into a set of input/output pairs for use with our RNN model
 def window_transform_text(text, window_size, step_size):
+    w = window_size
+
     # containers for input/output pairs
-    inputs = []
-    outputs = []
+    inputs = [text[i:i + w] for i in range(0, len(text) - w, step_size)]
+    outputs = [text[i + w] for i in range(0, len(text) - w, step_size)]
 
     return inputs, outputs
 
@@ -60,4 +55,11 @@ def window_transform_text(text, window_size, step_size):
 # TODO build the required RNN model:
 # a single LSTM hidden layer with softmax activation, categorical_crossentropy loss
 def build_part2_RNN(window_size, num_chars):
-    pass
+    model = Sequential()
+
+    # an LSTM module with 200 hidden units
+    model.add(LSTM(200, input_shape=(window_size, num_chars)))
+    # a Dense module with num chars units
+    model.add(Dense(num_chars, activation='softmax'))
+
+    return model
